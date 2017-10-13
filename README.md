@@ -49,3 +49,19 @@ Hostname=Zabbix server
 不被允许。其他非本机zabbix-agent直接配置zabbix-server真实地址即可
 
 ```
+### 3.配置grafana
+登录http://ip:3000
+默认用户名admin 密码admin
+使zabbix插件生效：Plugins->app->Zabbix->Enable
+添加Data Source
+```
+Name: zabbix
+Type: Zabbix
+url: http://ip:80/api_jsonrpc.php
+Access: direct
+Zabbix API details Username: Admin    #zabbix 登录用户名
+Zabbix API details Password: zabbix   #zabbix 登录密码
+
+Save & Test 如果登录成果会有提示
+```
+
