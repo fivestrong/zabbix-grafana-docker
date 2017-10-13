@@ -1,0 +1,88 @@
+version: '2'
+
+services:
+  server:
+    image: zabbix/zabbix-server-mysql:latest
+    container_name: zabbix-server
+    depends_on:
+     - mysql
+    environment:
+      TZ: Asia/Shanghai
+      DB_SERVER_HOST: "mysql"
+      MYSQL_DATABASE: "zabbix"
+      MYSQL_USER: "zabbix"
+      MYSQL_PASSWORD: "zabbix_pwd"
+      MYSQL_ROOT_PASSWORD: "root_pwd"
+    ports:
+     - "10051:10051"
+    volumes:
+     - /etc/localtime:/etc/localtime:ro
+    links:
+     - mysql:zabbix-mysql
+    user: root
+    networks:
+      default:
+        aliases:
+          - server
+    restart: always
+  
+  web:
+    image: zabbix/zabbix-web-nginx-mysql:latest
+    container_name: zabbix-web
+    depends_on:
+     - mysql
+     - server
+    environment:
+      TZ: Asia/Shanghai
+      DB_SERVER_HOST: "mysql"
+      ZBX_SERVER_HOST: "server"
+      MYSQL_DATABASE: "zabbix"
+      MYSQL_USER: "zabbix"
+      MYSQL_PASSWORD: "zabbix_pwd"
+      MYSQL_ROOT_PASSWORD: "root_pwd"
+    volumes:
+     - ./zabbix/graphfont.ttf:/usr/share/zabbix/fonts/graphfont.ttf
+     - /etc/localtime:/etc/localtime:ro
+    
+    links:
+      - mysql:zabbix-mysql
+      - server:zabbix-server
+    ports:
+     - "80:80"
+    user: root
+    networks:
+      default:
+        aliases:
+          - web
+    restart: always 
+
+  mysql:
+    image: mysql:5.7
+    container_name: zabbix-mysql
+    command: --character-set-server=utf8 --collation-server=utf8_general_ci
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_DATABASE: "zabbix"
+      MYSQL_USER: "zabbix"
+      MYSQL_PASSWORD: "zabbix_pwd"
+      MYSQL_ROOT_PASSWORD: "root_pwd"     
+    networks:
+      default:
+        aliases:
+          - mysql
+    volumes:
+     - /home/data/zabbix/database/mysql:/var/lib/mysql
+     - /etc/localtime:/etc/localtime:ro
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+     TZ: Asia/Shanghai
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/plugins:/var/lib/grafana/plugins
+    restart: always
+
