@@ -64,4 +64,6 @@ Zabbix API details Password: zabbix   #zabbix 登录密码
 
 Save & Test 如果登录成果会有提示
 ```
-
+## 参考
+https://github.com/liqiang311/zabbix-grafana
+由于以上配置在实际测试环境跑不通，所以我进行了修改以及把遇到的坑填了一下，在此感谢原作者。
