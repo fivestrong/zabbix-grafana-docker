@@ -22,6 +22,15 @@ docker pull grafana/grafana:latest
 cd zabbix-grafana
 docker-compose up -d
 ```
+### 4.添加sendEmail插件
+```
+docker-compose down
+cd zabbix-server-mysql-sendEmail
+docker build -t zabbix/zabbix-server-mysql:latest .
+
+cd ..
+docker-compose up -d 
+```
 ## 二、配置
 
 ### 1 配置zabbix web
