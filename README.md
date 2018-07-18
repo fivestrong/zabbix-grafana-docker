@@ -1,6 +1,8 @@
 # zabbix-grafana
 docker-compose file for build up zabbix server and grafana
 
+该文档用于部署docker集成的zabbix服务以及前端展示平台grafana
+
 ## 一、部署
 ### 1. 下载docker-compose文件以及所需目录,并更新grafana-zabbix插件
 ```
@@ -22,7 +24,10 @@ docker pull grafana/grafana:latest
 cd zabbix-grafana
 docker-compose up -d
 ```
-### 4.添加sendEmail插件
+
+### 4.~~添加sendEmail插件~~
+注:更新最新版本zabbbix-server-mysql之后该步骤会导致容器无限重启，具体原因没有细
+研究，改为使用官方自带Email来发送，除了没研究怎么添加抄送，只能每个联系人各发送一份邮件，其他一切完美。
 ```
 docker-compose down
 cd zabbix-server-mysql-sendEmail
@@ -31,6 +36,42 @@ docker build -t zabbix/zabbix-server-mysql:latest .
 cd ..
 docker-compose up -d 
 ```
+### 5. 利用官方Email插件发送告警邮件
+(图片来自互联网，侵删)
+
+管理-示警媒介类型-Email
+![](https://s1.ax1x.com/2018/07/18/P11FyD.png)
+设置Zabbix用户报警邮箱地址
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831121337421-1164876090.png)
+```shell
+名称：Email
+类型：电子邮件
+SMTP 服务器：zabbix.163.com
+SMTP HELO：zabbix.163.com
+SMTP电邮：zabbix@zabbix.163.com
+已启用：勾选
+```
+配置-用户-Admin (Zabbix Administrator)
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831123805468-1251886088.png)
+切换到示警媒介
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831123834124-894032562.png)
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831123919280-1633570748.png)
+```shell
+类型：Email
+收件人：xxx@163.com
+其他默认即可，也可以根据需要设置
+状态：已启用
+```
+设置Zabbix触发报警的动作
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831124150999-1243269059.png)
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831124612312-1898904334.png)
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831125258218-1564250658.png)
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831125329780-1879928416.png)
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831125347030-1112819673.png)
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831125403796-1942217419.png)
+![](https://images2017.cnblogs.com/blog/1096467/201708/1096467-20170831125551374-1395860935.png)
+
+
 ## 二、配置
 
 ### 1 配置zabbix web
@@ -43,6 +84,7 @@ links:
       - server:zabbix-server
 ```
 ### 2.添加zabbix server本身服务器的监控
+
 初始zabbix web添加了Zabbix server的主机监控选项，有人说zabbix docker镜像有docker agent,但是直接点enable开启会报错。
 于是又在本机上安装了zabbix-agent的rpm包
 ```
@@ -57,22 +99,60 @@ Hostname=Zabbix server
 但是用zabbix_get命令测试通过这两个地址相关参数都没问，但web会显示error,查看zabbix-agent的log会发现172的有个地址
 不被允许。其他非本机zabbix-agent直接配置zabbix-server真实地址即可
 
+总结一下：这里Server和ServerActive地址要填写zabbix-server-mysql容器的地址。
 ```
 ### 3.配置grafana
 登录http://ip:3000
 默认用户名admin 密码admin
 使zabbix插件生效：Plugins->app->Zabbix->Enable
 添加Data Source
+填写以下内容，此数据源为Zabbix的数据库，在第二个数据源中会用到。
 ```
-Name: zabbix
-Type: Zabbix
-url: http://ip:80/api_jsonrpc.php
-Access: direct
-Zabbix API details Username: Admin    #zabbix 登录用户名
-Zabbix API details Password: zabbix   #zabbix 登录密码
+注:因为是在docker容器操作，这里mysql地址填写为mysql容器地址,即172.19.0.x
+```
+
+```
+Name: Zabbix
+Type: MySQL
+MySQL Connection Host: 172.19.0.x:10053
+Database: zabbix
+User: zabbix
+Password: zabbix_pwd
 
 Save & Test 如果登录成果会有提示
 ```
+继续添加数据源。内容如下：
+```
+注:同上这里url地址填写zabbix-nginx-web容器的地址，端口默认为80
+```
+```
+Name: zabbix
+Type: Zabbix
+url: http://172.19.0.x:80/api_jsonrpc.php
+Access: Server(Default)
+Basic Auth: √
+Basic Auth Details User: admin
+Basic Auth Details Password: zabbix
+Zabbix API details Username: admin
+Zabbix API details Password: zabbix
+Direct DB Connection Enable: √
+Direct DB Connection SQL Data Source: Zabbix
+Alerting Enable alerting: √
+Alerting Add thresholds: √
+
+Save & Test 如果登录成果会有提示
+```
+### 4.导入zabbix数据
+在添加zabbix数据源之后，Settings旁边有个Dashboards选项，里面有
+```
+Zabbix System Status                           import
+Zabbix Template Linux Server                   import
+
+导入这两个就可以看到zabbix监控的数据了，具体其他配置图表可以到官方文档中查找
+```
+里面有实例
+http://play.grafana-zabbix.org/
 ## 参考
 https://github.com/liqiang311/zabbix-grafana
+https://liqiang311.github.io/linux/%E5%9F%BA%E4%BA%8EDocker%E7%9A%84Zabbix+Grafana%E7%9B%91%E6%8E%A7/
 由于以上配置在实际测试环境跑不通，所以我进行了修改以及把遇到的坑填了一下，在此感谢原作者。

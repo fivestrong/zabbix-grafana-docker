@@ -82,6 +82,10 @@ services:
      TZ: Asia/Shanghai
     ports:
       - 3000:3000
+    networks:
+      default:
+        aliases:
+          - grafana
     volumes:
       - ./grafana/plugins:/var/lib/grafana/plugins
     restart: always
