@@ -152,7 +152,16 @@ Zabbix Template Linux Server                   import
 ```
 里面有实例
 http://play.grafana-zabbix.org/
+
+## 小知识
+通过iptables限制docker容器端口
+```
+docker 会在iptables上加上自己的转发规则，如果直接在input链上限制端口是没有效果的。这就需要限制docker的转发链上的DOCKER表。
+# 查询DOCKER表并显示规则编号
+iptables -L DOCKER -n --line-number 
+# 修改对应编号的iptables 规则，这里添加了允许访问ip的限制
+iptables -R DOCKER 5 -p tcp -m tcp -s 192.168.1.0/24 --dport 3000 -j ACCEPT
+```
 ## 参考
-https://github.com/liqiang311/zabbix-grafana
 https://liqiang311.github.io/linux/%E5%9F%BA%E4%BA%8EDocker%E7%9A%84Zabbix+Grafana%E7%9B%91%E6%8E%A7/
-由于以上配置在实际测试环境跑不通，所以我进行了修改以及把遇到的坑填了一下，在此感谢原作者。
+
