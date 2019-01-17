@@ -114,7 +114,7 @@ Hostname=Zabbix server
 ```
 Name: Zabbix
 Type: MySQL
-MySQL Connection Host: 172.19.0.x:10053
+MySQL Connection Host: 172.19.0.x:3306
 Database: zabbix
 User: zabbix
 Password: zabbix_pwd
