@@ -162,6 +162,4 @@ iptables -L DOCKER -n --line-number
 # 修改对应编号的iptables 规则，这里添加了允许访问ip的限制
 iptables -R DOCKER 5 -p tcp -m tcp -s 192.168.1.0/24 --dport 3000 -j ACCEPT
 ```
-## 参考
-https://liqiang311.github.io/linux/%E5%9F%BA%E4%BA%8EDocker%E7%9A%84Zabbix+Grafana%E7%9B%91%E6%8E%A7/
 
