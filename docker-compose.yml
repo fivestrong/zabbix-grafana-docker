@@ -74,15 +74,11 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
+    container_name: zabbix-grafana
     environment:
      TZ: Asia/Shanghai
     ports:
       - 3000:3000
-    networks:
-      default:
-        aliases:
-          - grafana
     volumes:
       - /home/data/grafana:/var/lib/grafana
       - ./grafana/plugins:/var/lib/grafana/plugins
