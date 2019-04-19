@@ -2,6 +2,13 @@
 docker-compose file for build up zabbix server and grafana
 
 该文档用于部署docker集成的zabbix服务以及前端展示平台grafana
+```text
+更新4月19日
+1. 由于每次升级docker镜像重构容器之后，每个容器的ip地址会发生改变，这回导致一系列的配置需要根据改变的ip地址进行调整，
+所以此次更新对容器ip地址进行了固定，可以自行修改喜欢的地址段。
+
+2. 对grafana容器的配置进行了调整，将配置挂载本地，防止配置重置丢失,具体挂载路径根据实际请情况进行修改。
+```
 
 ## 一、部署
 ### 1. 下载docker-compose文件以及所需目录,并更新grafana-zabbix插件
