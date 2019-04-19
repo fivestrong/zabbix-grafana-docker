@@ -21,9 +21,8 @@ services:
      - mysql:zabbix-mysql
     user: root
     networks:
-      default:
-        aliases:
-          - server
+      zabbixbr:
+        ipv4_address: 172.25.0.4
     restart: always
   
   web:
@@ -51,9 +50,8 @@ services:
      - "80:80"
     user: root
     networks:
-      default:
-        aliases:
-          - web
+      zabbixbr:
+        ipv4_address: 172.25.0.5
     restart: always 
 
   mysql:
@@ -67,9 +65,8 @@ services:
       MYSQL_PASSWORD: "zabbix_pwd"
       MYSQL_ROOT_PASSWORD: "root_pwd"     
     networks:
-      default:
-        aliases:
-          - mysql
+      zabbixbr:
+        ipv4_address: 172.25.0.3
     volumes:
      - /home/data/zabbix/database/mysql:/var/lib/mysql
      - /etc/localtime:/etc/localtime:ro
@@ -87,6 +84,16 @@ services:
         aliases:
           - grafana
     volumes:
+      - /home/data/grafana:/var/lib/grafana
       - ./grafana/plugins:/var/lib/grafana/plugins
+    networks:
+      zabbixbr:
+        ipv4_address: 172.25.0.2
     restart: always
-
+networks:
+  zabbixbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.25.0.0/16
+         gateway: 172.25.0.1
